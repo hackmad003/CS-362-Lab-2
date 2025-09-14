@@ -1,0 +1,98 @@
+/*
+V1
+Ahmad Awaidah 651397101 aawai@uic.edu
+TA:  
+Lab 2 Three Bit Counter
+
+Description – 
+
+Hardware: Arduino UNO R4 Wi-Fi
+Software: C/C++
+
+Sources:
+
+////////////
+//HARDWARE//
+////////////
+
+
+
+
+*/
+
+///////////////////
+//GLOBAL VARIABLES//
+///////////////////
+const int ledPins[] = {8, 9, 10}; // LSB to MSB
+const int incButtonPin = 5;
+const int decButtonPin = 4;
+int buttonCounter = 0;
+
+int incButtonState;
+int incLastButtonState = LOW;
+unsigned long incLastDebounceTime = 0;
+unsigned long incDebounceDelay = 50;
+
+int decButtonState;
+int decLastButtonState = LOW;
+unsigned long decLastDebounceTime = 0;
+unsigned long decDebounceDelay = 50;
+
+void IncrementDebounce() {
+  int incReading = digitalRead(incButtonPin);
+  // Increment debounce
+  if (incReading != incLastButtonState) {
+    incLastDebounceTime = millis();
+  }
+  if ((millis() - incLastDebounceTime) > incDebounceDelay) {
+    if (incReading != incButtonState) {
+      incButtonState = incReading;
+      if (incButtonState == HIGH) {
+        buttonCounter++;
+        if (buttonCounter > 7) buttonCounter = 7;
+      }
+    }
+  }
+  incLastButtonState = incReading;
+}
+
+void DecrementDebounce(){
+  int decReading = digitalRead(decButtonPin);
+  // Decrement debounce
+  if (decReading != decLastButtonState) {
+    decLastDebounceTime = millis();
+  }
+  if ((millis() - decLastDebounceTime) > decDebounceDelay) {
+    if (decReading != decButtonState) {
+      decButtonState = decReading;
+      if (decButtonState == HIGH) {
+        buttonCounter--;
+        if (buttonCounter < 0) buttonCounter = 0;
+      }
+    }
+  }
+  decLastButtonState = decReading;
+}
+
+void BinaryMask(){
+  // Update LEDs based on binary value
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(ledPins[i], (buttonCounter >> i) & 1);
+  }
+}
+
+
+void setup() {
+  for (int i = 0; i < 3; i++) {
+    pinMode(ledPins[i], OUTPUT);
+    digitalWrite(ledPins[i], LOW);
+  }
+  pinMode(incButtonPin, INPUT);
+  pinMode(decButtonPin, INPUT);
+}
+
+void loop() {
+  IncrementDebounce();
+  DecrementDebounce();
+  BinaryMask();
+}
